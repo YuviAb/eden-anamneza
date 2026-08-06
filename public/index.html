@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>עדן קוסמטיקה - כרטיס רישום למטופל</title>
+
+
+<style>
+  :root{
+    --ink:#1d1d1f;
+    --line:#b9b9bd;
+    --line-soft:#d7d7db;
+    --panel-border:#c9c9cd;
+    --accent:#8a7355;
+    --accent-dark:#6f5c43;
+    --field:#5a5a5e;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:"Segoe UI","Arial Hebrew","Noto Sans Hebrew",Arial,sans-serif;
+    color:var(--ink);
+    background:#e9e9ec;
+    font-size:16px;            /* 16px base = no auto-zoom on iOS focus */
+    line-height:1.55;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+    -webkit-text-size-adjust:100%;
+  }
+  .page{
+    background:#fff;
+    max-width:900px;
+    margin:0 auto;
+    padding:24px 20px 28px;
+    box-shadow:0 2px 18px rgba(0,0,0,.10);
+  }
+
+  /* ---- Brand header ---- */
+  .brand{text-align:center;margin-bottom:20px;}
+  .brand h1{
+    font-size:clamp(26px,7vw,40px);
+    letter-spacing:1.5px;
+    margin:0;
+    font-weight:600;
+    color:#2b2b2e;
+    line-height:1.15;
+  }
+  .brand .tag{
+    font-size:clamp(11px,3vw,15px);
+    letter-spacing:5px;
+    color:#6b6b6f;
+    margin-top:4px;
+    display:inline-block;
+    border-top:1px solid #cfcfd3;
+    border-bottom:1px solid #cfcfd3;
+    padding:3px 14px;
+  }
+
+  /* ---- Top identity strip ---- */
+  .idstrip{
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:12px 14px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px 18px;
+    margin-bottom:20px;
+  }
+  .idstrip label{display:flex;align-items:center;gap:8px;flex:1 1 240px;}
+  .idstrip label span{flex:0 0 auto;white-space:nowrap;font-size:15px;}
+
+  /* generic underline input */
+  input.line{
+    border:none;
+    border-bottom:1px solid var(--line);
+    background:transparent;
+    font:inherit;
+    color:var(--field);
+    padding:8px 4px;
+    min-width:0;
+    flex:1;
+    outline:none;
+    min-height:40px;
+  }
+  input.line:focus,textarea:focus,input.fill:focus{border-color:var(--accent);}
+
+  h2.doc-title{
+    text-align:center;
+    font-size:clamp(19px,5vw,24px);
+    margin:8px 0 22px;
+    font-weight:700;
+    line-height:1.25;
+  }
+
+  /* ---- panels ---- */
+  .grid2{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+    margin-bottom:16px;
+    align-items:start;
+  }
+  .diag-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media(max-width:720px){
+    .grid2,.diag-grid{grid-template-columns:1fr;gap:14px;}
+  }
+
+  .panel{
+    border:1px solid var(--panel-border);
+    border-radius:6px;
+    padding:16px;
+    background:#fff;
+  }
+  .panel h3{text-align:center;margin:0 0 10px;font-size:18px;font-weight:700;}
+  .panel .sub{text-align:center;font-size:13px;color:#555;margin:-4px 0 12px;}
+
+  /* checkbox / radio rows — big touch targets */
+  .chk{
+    display:flex;align-items:center;gap:10px;
+    margin:2px 0;font-size:15px;
+    min-height:44px;padding:2px 2px;cursor:pointer;
+  }
+  .chk input[type=checkbox],.chk input[type=radio]{
+    width:22px;height:22px;flex:0 0 auto;accent-color:var(--accent);margin:0;
+  }
+  .chk .fill{
+    border:none;border-bottom:1px solid var(--line);background:transparent;
+    font:inherit;color:var(--field);flex:1;min-width:40px;outline:none;
+    padding:6px 3px;min-height:36px;
+  }
+
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;}
+  @media(max-width:420px){.cols{grid-template-columns:1fr;}}
+
+  /* yes/no rows */
+  .yn-row{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:6px 0;border-bottom:1px solid var(--line-soft);min-height:46px;
+  }
+  .yn-row:last-child{border-bottom:none;}
+  .yn-row .q{font-size:15px;flex:1;}
+  .yn-row .opt{display:flex;gap:6px;flex:0 0 auto;}
+  .yn-row .opt label{
+    display:inline-flex;align-items:center;gap:5px;cursor:pointer;
+    font-size:14px;padding:6px 8px;border:1px solid var(--line-soft);
+    border-radius:6px;min-height:40px;
+  }
+  .yn-row .opt input{width:18px;height:18px;accent-color:var(--accent);margin:0;}
+
+  .divider{border:none;border-top:1px solid var(--line-soft);margin:12px 0;}
+
+  .field-row{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:15px;flex-wrap:wrap;}
+  .field-row>span{flex:0 0 auto;}
+  .field-row .fill{
+    border:none;border-bottom:1px solid var(--line);background:transparent;
+    font:inherit;color:var(--field);flex:1;outline:none;padding:6px 3px;min-height:38px;min-width:60px;
+  }
+  .field-row.stack{flex-direction:column;align-items:stretch;}
+  .field-row.stack .fill{width:100%;}
+
+  textarea{
+    width:100%;border:1px solid var(--line);border-radius:6px;background:#fff;
+    font:inherit;color:var(--field);padding:10px;resize:vertical;outline:none;line-height:2.1;
+  }
+
+  .section-title{text-align:center;font-size:clamp(18px,5vw,22px);font-weight:700;margin:24px 0 12px;}
+
+  .notice ul{margin:8px 0;padding-inline-start:0;list-style:none;}
+  .notice li{margin:9px 0;font-size:15px;padding-inline-start:18px;position:relative;line-height:1.5;}
+  .notice li:before{content:"*";position:absolute;inset-inline-start:0;color:var(--accent);font-weight:700;}
+
+  .declare-box{border:1px solid var(--panel-border);border-radius:6px;padding:16px;margin:16px 0;font-size:15px;}
+  .declare-box p{margin:0 0 12px;}
+  .sign-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px;}
+  @media(max-width:560px){.sign-row{grid-template-columns:1fr;}}
+  .sign-row label{display:flex;align-items:center;gap:8px;font-size:15px;}
+  .sign-row .fill{
+    border:none;border-bottom:1px solid var(--line);background:transparent;
+    font:inherit;color:var(--field);flex:1;outline:none;padding:6px 3px;min-height:38px;
+  }
+
+  .diag-list .field-row{margin:12px 0;}
+
+  /* treatment log */
+  .log-row{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;margin:6px 0;font-size:15px;}
+  .log-row .num{white-space:nowrap;font-weight:600;}
+  .log-fields{display:flex;gap:10px;align-items:center;flex:1;flex-wrap:wrap;}
+  .log-fields input{
+    border:none;border-bottom:1px solid var(--line);background:transparent;
+    color:var(--field);padding:6px 3px;outline:none;font:inherit;min-height:38px;
+  }
+  .log-fields .date{flex:0 0 130px;}
+  .log-fields .desc{flex:1;min-width:120px;}
+  @media(max-width:560px){
+    .log-row{grid-template-columns:1fr;}
+    .log-fields{flex-direction:column;align-items:stretch;}
+    .log-fields .date,.log-fields .desc{flex:1 1 auto;width:100%;}
+    .log-fields .lbl{font-size:13px;color:#555;}
+  }
+
+  footer{
+    margin-top:26px;padding-top:14px;border-top:1px solid #333;
+    text-align:center;font-size:13px;color:#333;direction:ltr;
+  }
+  footer .heb{direction:rtl;}
+
+  /* sticky action bar */
+  .actions{
+    position:sticky;bottom:0;z-index:20;
+    background:#fff;border-top:1px solid var(--line);
+    padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+    margin:22px -20px -28px;
+    display:flex;gap:10px;justify-content:center;flex-wrap:wrap;
+    box-shadow:0 -3px 12px rgba(0,0,0,.06);
+  }
+  .btn{
+    font:inherit;font-weight:600;border:none;border-radius:8px;padding:14px 22px;
+    cursor:pointer;font-size:16px;transition:.15s;min-height:50px;flex:1 1 auto;max-width:280px;
+  }
+  .btn-primary{background:var(--accent);color:#fff;}
+  .btn-primary:active,.btn-primary:hover{background:var(--accent-dark);}
+  .btn-ghost{background:#f0eee9;color:#4a4a4a;}
+  .btn-ghost:active,.btn-ghost:hover{background:#e5e2db;}
+  .status{width:100%;text-align:center;font-size:15px;margin-top:2px;min-height:20px;}
+  .status.ok{color:#1a7a3a;}
+  .status.err{color:#b12727;}
+
+  .page-sep{border-top:2px dashed #d7d7db;margin:28px 0;}
+
+  @media print{
+    body{background:#fff;}
+    .page{box-shadow:none;margin:0;max-width:100%;padding:20px;}
+    .actions{display:none;}
+    .page-sep{page-break-before:always;border:none;margin:0;}
+    input,textarea,.fill{color:#000 !important;}
+    .yn-row .opt label{border-color:#bbb;}
+  }
+</style>
+</head>
+<body>
+
+<form id="anamnezaForm" class="page">
+
+  <!-- ===================== PAGE 1 ===================== -->
+  <div class="brand">
+    <h1 dir="ltr" style="direction:ltr;">EDEN COSMETICS</h1>
+    <span class="tag">Perfect Skin</span>
+  </div>
+
+  <div class="idstrip">
+    <label><span>שם:</span><input class="line" name="שם" id="clientName"></label>
+    <label><span>שם משפחה:</span><input class="line" name="שם משפחה" id="clientLast"></label>
+    <label><span>תאריך:</span><input class="line" name="תאריך" id="formDate" type="date"></label>
+    <label><span>ת.לידה:</span><input class="line" name="תאריך לידה" type="text"></label>
+    <label><span>כתובת:</span><input class="line" name="כתובת"></label>
+    <label><span>טלפון:</span><input class="line" name="טלפון" id="clientPhone" type="tel" inputmode="tel"></label>
+    <label><span>מייל:</span><input class="line" name="מייל של הלקוחה" id="clientEmail" type="email" inputmode="email"></label>
+    <label><span>משקל:</span><input class="line" name="משקל" inputmode="numeric"></label>
+    <label><span>גובה:</span><input class="line" name="גובה" inputmode="numeric"></label>
+  </div>
+
+  <h2 class="doc-title">כרטיס רישום למטופל - הצהרת בריאות</h2>
+
+  <div class="grid2">
+    <!-- מצב בריאות כללי -->
+    <div class="panel">
+      <h3>מצב בריאות כללי</h3>
+      <div class="yn-row"><div class="q">פעילות גופנית</div><div class="opt"><label><input type="radio" name="פעילות גופנית" value="כן">כן</label><label><input type="radio" name="פעילות גופנית" value="לא">לא</label></div></div>
+      <div class="yn-row"><div class="q">עישון</div><div class="opt"><label><input type="radio" name="עישון" value="כן">כן</label><label><input type="radio" name="עישון" value="לא">לא</label></div></div>
+      <div class="yn-row"><div class="q">וסת סדיר</div><div class="opt"><label><input type="radio" name="וסת סדיר" value="כן">כן</label><label><input type="radio" name="וסת סדיר" value="לא">לא</label></div></div>
+      <div class="yn-row"><div class="q">הריון - הנקה</div><div class="opt"><label><input type="radio" name="הריון/הנקה" value="כן">כן</label><label><input type="radio" name="הריון/הנקה" value="לא">לא</label></div></div>
+      <div class="yn-row"><div class="q">תוספי תזונה</div><div class="opt"><label><input type="radio" name="תוספי תזונה כללי" value="כן">כן</label><label><input type="radio" name="תוספי תזונה כללי" value="לא">לא</label></div></div>
+      <div class="yn-row"><div class="q">שתיית אלכוהול</div><div class="opt"><label><input type="radio" name="שתיית אלכוהול" value="כן">כן</label><label><input type="radio" name="שתיית אלכוהול" value="לא">לא</label></div></div>
+      <div class="yn-row"><div class="q">שתיית קפאין</div><div class="opt"><label><input type="radio" name="שתיית קפאין" value="כן">כן</label><label><input type="radio" name="שתיית קפאין" value="לא">לא</label></div></div>
+    </div>
+
+    <!-- רגישות ואלרגיות -->
+    <div class="panel">
+      <h3>רגישות ואלרגיות</h3>
+      <div class="cols">
+        <label class="chk"><input type="checkbox" name="אלרגיה" value="אספירין">אספירין</label>
+        <label class="chk"><input type="checkbox" name="אלרגיה" value="מתכות">מתכות</label>
+        <label class="chk"><input type="checkbox" name="אלרגיה" value="לקטוז">לקטוז</label>
+        <label class="chk"><input type="checkbox" name="אלרגיה" value="G6PD">G6PD</label>
+        <label class="chk"><input type="checkbox" name="אלרגיה" value="גלוטן">גלוטן</label>
+        <label class="chk"><input type="checkbox" name="אלרגיה" value="אנטיביוטיקה">אנטיביוטיקה</label>
+        <label class="chk"><input type="checkbox" name="אלרגיה" value="זהב">זהב</label>
+        <label class="chk"><input type="checkbox" name="אלרגיה" value="חומרי אלחוש">חומרי אלחוש</label>
+      </div>
+      <label class="chk"><input type="checkbox" name="אלרגיה אחר סימון" value="אחר">אחר:<input class="fill" name="אלרגיה אחר"></label>
+      <label class="chk"><input type="checkbox" name="השתלת מתכת" value="כן">האם יש שתל מתכתי בגוף?</label>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <!-- מחלות רקע -->
+    <div class="panel">
+      <h3>מחלות רקע</h3>
+      <div class="sub">האם בעבר / הווה חלית במחלות או סימנים המפורטים להלן?</div>
+      <div class="cols">
+        <label class="chk"><input type="checkbox" name="מחלות רקע" value="אסטמה">אסטמה</label>
+        <label class="chk"><input type="checkbox" name="מחלות רקע" value="סכרת">סכרת</label>
+        <label class="chk"><input type="checkbox" name="מחלות רקע" value="בעיות לב">בעיות לב</label>
+        <label class="chk"><input type="checkbox" name="מחלות רקע" value="מחלות אונקולוגיות">מחלות אונקולוגיות</label>
+        <label class="chk"><input type="checkbox" name="מחלות רקע" value="מחלת כליות">מחלת כליות</label>
+        <label class="chk"><input type="checkbox" name="מחלות רקע" value="HIV">HIV</label>
+        <label class="chk"><input type="checkbox" name="מחלות רקע" value="פעילות בלוטת התריס">פעילות בלוטת התריס</label>
+        <label class="chk"><input type="checkbox" name="מחלות רקע" value="הפרעות קרישת דם">הפרעות קרישת דם</label>
+        <label class="chk"><input type="checkbox" name="מחלות רקע" value="אפילפסיה">אפילפסיה</label>
+        <label class="chk"><input type="checkbox" name="מחלות רקע" value="מחלת קרוהן">מחלת קרוהן</label>
+        <label class="chk"><input type="checkbox" name="מחלות רקע" value="הפרעות הורמונליות">הפרעות הורמונליות</label>
+        <label class="chk"><input type="checkbox" name="מחלות רקע" value="לחץ דם">לחץ דם</label>
+        <label class="chk"><input type="checkbox" name="מחלות רקע" value="מיגרנה/כאבי ראש">מיגרנה/כאבי ראש כרוניים</label>
+        <label class="chk"><input type="checkbox" name="מחלות רקע" value="כשל חיסוני">כשל חיסוני</label>
+        <label class="chk"><input type="checkbox" name="מחלות רקע" value="אנמיה">אנמיה</label>
+      </div>
+      <label class="chk"><input type="checkbox" name="מחלות רקע" value="צהבת">צהבת:<input class="fill" name="צהבת פירוט"></label>
+      <hr class="divider">
+      <label class="chk"><input type="checkbox" name="תרופות 3 חודשים אחרונים" value="כן">בשלושת החודשים האחרונים, האם חלית ו/או נטלת תרופות כלשהן?</label>
+      <input class="fill" name="תרופות 3 חודשים פירוט" style="width:100%;border-bottom:1px solid var(--line);">
+    </div>
+
+    <!-- מחלות עור -->
+    <div class="panel">
+      <h3>מחלות עור</h3>
+      <div class="sub">האם בעבר / הווה חלית במחלות או סימנים המפורטים להלן?</div>
+      <div class="cols">
+        <label class="chk"><input type="checkbox" name="מחלות עור" value="פסוריאזיס">פסוריאזיס</label>
+        <label class="chk"><input type="checkbox" name="מחלות עור" value="אקנה">אקנה</label>
+        <label class="chk"><input type="checkbox" name="מחלות עור" value="הרפס">הרפס</label>
+        <label class="chk"><input type="checkbox" name="מחלות עור" value="יובש קיצוני">יובש קיצוני</label>
+        <label class="chk"><input type="checkbox" name="מחלות עור" value="סבוריאה">סבוריאה</label>
+        <label class="chk"><input type="checkbox" name="מחלות עור" value="נטייה להצטלקות">נטייה להצטלקות</label>
+      </div>
+      <label class="chk"><input type="checkbox" name="פצעים דלקתיים" value="כן">האם לעיתים מופיעים פצעים דלקתיים?</label>
+      <input class="fill" name="פצעים דלקתיים פירוט" style="width:100%;border-bottom:1px solid var(--line);">
+      <label class="chk" style="margin-top:6px;"><input type="checkbox" name="נכווה מחשיפה לשמש" value="כן">האם עורך נכווה בקלות מחשיפה לשמש?</label>
+      <input class="fill" name="נכווה מחשיפה פירוט" style="width:100%;border-bottom:1px solid var(--line);">
+      <label class="chk" style="margin-top:6px;"><input type="checkbox" name="שיזוף נתפס בקלות" value="כן">האם שיזוף נתפס בקלות בעורך בעת חשיפה לשמש?</label>
+      <input class="fill" name="שיזוף פירוט" style="width:100%;border-bottom:1px solid var(--line);">
+    </div>
+  </div>
+
+  <div class="grid2">
+    <!-- תמרוקים וטיפולים אסתטיים -->
+    <div class="panel">
+      <h3>תמרוקים וטיפולים אסתטיים</h3>
+      <div class="sub" style="text-align:right;">האם בשימושך השוטף תמרוקים כגון:</div>
+      <div class="cols">
+        <label class="chk"><input type="checkbox" name="תמרוקים" value="סבון">סבון</label>
+        <label class="chk"><input type="checkbox" name="תמרוקים" value="סרום">סרום</label>
+        <label class="chk"><input type="checkbox" name="תמרוקים" value="קרם לחות">קרם לחות</label>
+        <label class="chk"><input type="checkbox" name="תמרוקים" value="קרם הגנה">קרם הגנה</label>
+        <label class="chk"><input type="checkbox" name="תמרוקים" value="פילינג">פילינג</label>
+      </div>
+      <label class="chk"><input type="checkbox" name="תמרוקים אחר סימון" value="אחר">אחר:<input class="fill" name="תמרוקים אחר"></label>
+      <label class="chk"><input type="checkbox" name="פילינג ביתי" value="כן">האם עברת בעבר טיפול פילינג ביתי / עמוק?</label>
+      <label class="chk"><input type="checkbox" name="רטין A" value="כן">האם בשימושך רטין A במרשם רופא?</label>
+      <label class="chk"><input type="checkbox" name="איפור קבוע" value="כן">האם עברת איפור קבוע?</label>
+      <label class="chk"><input type="checkbox" name="פרוצדורות כירורגיות" value="כן">האם ביצעת הזרקות או פרוצדורות כירורגיות?</label>
+      <div class="sub" style="text-align:right;margin:4px 0 2px;">בוטוקס / סיליקון / חומצה היאלרונית / ניתוח אסתטי / מזותרפיה / מיקרונידלינג / אחר:</div>
+      <input class="fill" name="פרוצדורות פירוט" style="width:100%;border-bottom:1px solid var(--line);">
+    </div>
+
+    <!-- נטילת תרופות -->
+    <div class="panel">
+      <h3>נטילת תרופות</h3>
+      <label class="chk"><input type="checkbox" name="תרופות" value="מניעת הריון">מניעת הריון / גלולות / מדבקות / התקן:</label>
+      <input class="fill" name="מניעת הריון פירוט" style="width:100%;border-bottom:1px solid var(--line);">
+      <div class="field-row stack"><span>נוגדי דכאון / חרדות / כדורי הרגעה / כדורי שינה / רטלין - קונצרטה / אחר:</span><input class="fill" name="נוגדי דכאון פירוט"></div>
+      <label class="chk"><input type="checkbox" name="תרופות" value="נוגדי קרישה">נוגדי קרישה - קומדין / אספירין / אחר:</label>
+      <input class="fill" name="נוגדי קרישה פירוט" style="width:100%;border-bottom:1px solid var(--line);">
+      <label class="chk"><input type="checkbox" name="תרופות" value="אנטיביוטיקה 10 ימים">אנטיביוטיקה ב-10 ימים האחרונים:</label>
+      <input class="fill" name="אנטיביוטיקה פירוט" style="width:100%;border-bottom:1px solid var(--line);">
+      <label class="chk"><input type="checkbox" name="תרופות" value="סטרואידים">סטרואידים בחודש האחרון:</label>
+      <input class="fill" name="סטרואידים פירוט" style="width:100%;border-bottom:1px solid var(--line);">
+      <label class="chk"><input type="checkbox" name="תרופות" value="רואקוטן">רואקוטן ב-3 חודשים האחרונים:</label>
+      <input class="fill" name="רואקוטן פירוט" style="width:100%;border-bottom:1px solid var(--line);">
+      <div class="field-row stack"><span>תוספי תזונה כלשהם:</span><input class="fill" name="תוספי תזונה פירוט"></div>
+      <div class="field-row stack"><span>תרופות אחרות שלא הוזכרו:</span><input class="fill" name="תרופות אחרות"></div>
+    </div>
+  </div>
+
+  <!-- ===================== PAGE 2 ===================== -->
+  <div class="page-sep"></div>
+
+  <h2 class="doc-title">מטרת הטיפול</h2>
+  <div class="field-row"><span>מה מביא אותך לטיפול קוסמטי?</span></div>
+  <textarea name="מטרת הטיפול" rows="4"></textarea>
+
+  <div class="section-title">מטופל/ת יקר/ה לידיעתך...</div>
+  <div class="notice">
+    <ul>
+      <li>אין לשפשף / לגרד את האיזור המטופל במשך 24 שעות.</li>
+      <li>אין לשהות במים חמים / ג'קוזי / סאונה, במשך 24 שעות.</li>
+      <li>יש להימנע מקיום אימוני כושר נמרצים 24 שעות.</li>
+      <li>יש להימנע באופן מוחלט מחשיפה יזומה לשמש, מיטות שיזוף ורצוי להקפיד על שימוש במקדם הגנה.</li>
+      <li>על המטופל/ת לדווח לקוסמטיקאי/ת על כל תופעת לוואי או רגישות יתר שהופיעה לאחר הטיפול.</li>
+      <li>חובת הקוסמטיקאי/ת לצלם את פניך לפני תחילת פרוצדורה קלינית לצורך תיעוד בלבד ולא יעשה בתמונה כל שימוש ללא רשות.</li>
+    </ul>
+  </div>
+
+  <div class="declare-box">
+    <p>בחתימתי להלן אני מאשר/ת כי כל המידע הנ"ל הינו אמת.</p>
+    <p>ידוע לי כי בחירת הטיפול הטוב ביותר עבורי, מתבססת על אמיתות נתונים אלו והטעיה מכוונת באשר למצבי הבריאותי ושאר נתוניי כפי שפורט לעיל עלולה לפגוע בי ותהא על אחריותי בלבד לרבות התוצאות הנגזרות מכך.</p>
+    <div class="sign-row">
+      <label>תאריך:<input class="fill" name="הצהרה תאריך"></label>
+      <label>שם מלא:<input class="fill" name="הצהרה שם מלא"></label>
+      <label>חתימה:<input class="fill" name="הצהרה חתימה"></label>
+    </div>
+  </div>
+
+  <div class="declare-box">
+    <p>אנא סמני בתיבה וחתמי בנוגע לחומרים שיווקים ופרסום:</p>
+    <label class="chk"><input type="checkbox" name="אישור פרסום תמונות" value="כן">אני מאשרת פרסום תמונותי בכיסוי עיניים למטרות שיווקיות</label>
+    <label class="chk"><input type="checkbox" name="אישור SMS" value="כן">אני מאשרת קבלת חומרים שיווקים במייל / SMS ע"י הקוסמטיקאי המטפל שלי.</label>
+    <div class="sign-row">
+      <label>תאריך:<input class="fill" name="שיווק תאריך"></label>
+      <label>שם מלא:<input class="fill" name="שיווק שם מלא"></label>
+      <label>חתימה:<input class="fill" name="שיווק חתימה"></label>
+    </div>
+  </div>
+
+  <!-- ===================== PAGE 3 ===================== -->
+  <div class="page-sep"></div>
+
+  <h2 class="doc-title">כרטיס למטופל - למילוי על ידי קוסמטיקאי/ת</h2>
+  <div class="notice" style="text-align:center;">
+    <ul style="display:inline-block;text-align:right;">
+      <li>יש לדרוש ולהצמיד לאנמנזה זו אישור רפואי באם ויש צורך</li>
+      <li>יש לצלם את פני המטופל בכמה זוויות לצורך תיעוד התהליך.</li>
+    </ul>
+  </div>
+
+  <div class="diag-grid">
+    <!-- נגעים בעור -->
+    <div class="panel diag-list">
+      <h3>נגעים בעור</h3>
+      <div class="field-row stack"><span>קומודונים וכו'</span><input class="fill" name="נגעים קומודונים"></div>
+      <div class="field-row stack"><span>קופרוז</span><input class="fill" name="נגעים קופרוז"></div>
+      <div class="field-row stack"><span>קשקשת / סבוריאה / אדמומיות / קילוף</span><input class="fill" name="נגעים קשקשת"></div>
+      <div class="field-row stack"><span>צלקות - היפר / היפו קלואידים</span><input class="fill" name="נגעים צלקות"></div>
+      <div class="field-row stack"><span>אקנה / נגעים דלקתיים</span><input class="fill" name="נגעים אקנה"></div>
+      <div class="field-row stack"><span>היפר / היפו- פיגמנטציה</span><input class="fill" name="נגעים פיגמנטציה"></div>
+      <div class="field-row stack"><span>נגעים / כתמים חשודים</span><input class="fill" name="נגעים חשודים"></div>
+    </div>
+
+    <!-- מצב העור הכללי -->
+    <div class="panel">
+      <h3>מצב העור הכללי</h3>
+      <label class="chk"><input type="checkbox" name="מצב עור כללי" value="יבש">יבש</label>
+      <label class="chk"><input type="checkbox" name="מצב עור כללי" value="חסר שומן">חסר שומן</label>
+      <label class="chk"><input type="checkbox" name="מצב עור כללי" value="מעורב">מעורב</label>
+      <label class="chk"><input type="checkbox" name="מצב עור כללי" value="שמן">שמן</label>
+      <div class="field-row"><span>פיצפטריק</span><input class="fill" name="פיצפטריק"></div>
+      <div style="margin-top:8px;font-weight:600;">טורגור</div>
+      <label class="chk"><input type="checkbox" name="טורגור" value="תקין">תקין</label>
+      <label class="chk"><input type="checkbox" name="טורגור" value="ירוד">ירוד</label>
+      <div style="margin-top:8px;font-weight:600;">טונוס</div>
+      <label class="chk"><input type="checkbox" name="טונוס" value="תקין">תקין</label>
+      <label class="chk"><input type="checkbox" name="טונוס" value="ירוד">ירוד</label>
+      <div style="margin-top:8px;font-weight:600;">נקבוביות</div>
+      <label class="chk"><input type="checkbox" name="נקבוביות" value="מורחב">מורחב</label>
+      <label class="chk"><input type="checkbox" name="נקבוביות" value="תקין">תקין</label>
+    </div>
+  </div>
+
+  <div class="section-title">אבחון כללי</div>
+  <textarea name="אבחון כללי" rows="4"></textarea>
+
+  <div class="section-title">תכנית טיפול</div>
+  <textarea name="תכנית טיפול" rows="4"></textarea>
+
+  <!-- ===================== PAGE 4 ===================== -->
+  <div class="page-sep"></div>
+
+  <h2 class="doc-title">חומרי טיפול ביתיים</h2>
+  <textarea name="חומרי טיפול ביתיים" rows="4"></textarea>
+
+  <div class="panel" style="margin-top:16px;">
+    <div id="logRows"></div>
+  </div>
+
+  <!-- action bar -->
+  <div class="actions">
+    <button type="button" class="btn btn-primary" id="sendBtn">שליחה וסיום</button>
+    <button type="button" class="btn btn-ghost" id="downloadBtn">הורדת הטופס כ-PDF</button>
+    <button type="button" class="btn btn-ghost" id="printBtn">הדפסה</button>
+    <div class="status" id="status"></div>
+  </div>
+
+  <footer>
+    <div dir="ltr" style="direction:ltr;">EDEN COSMETICS</div>
+  </footer>
+
+</form>
+
+<script>
+/* ---------- build treatment log rows (1-10) ---------- */
+(function(){
+  const wrap = document.getElementById('logRows');
+  for(let i=1;i<=10;i++){
+    const row = document.createElement('div');
+    row.className='log-row';
+    row.innerHTML =
+      '<span class="num">'+i+'. מועד הטיפול</span>'+
+      '<div class="log-fields">'+
+        '<input class="date" name="מועד טיפול '+i+'" placeholder="מועד">'+
+        '<span class="lbl">סוג ותיאור הטיפול</span>'+
+        '<input class="desc" name="סוג ותיאור טיפול '+i+'">'+
+      '</div>';
+    wrap.appendChild(row);
+  }
+})();
+
+/* ---------- default date = today ---------- */
+document.getElementById('formDate').valueAsDate = new Date();
+
+/* ==============================================================
+   שרת ה-PDF (Resend)  —  החלף בכתובת שתקבל אחרי הפריסה ל-Netlify
+   לדוגמה: https://eden-anamneza.netlify.app/.netlify/functions/submit
+   ============================================================== */
+const PDF_ENDPOINT = "https://edencosmetics.netlify.app/.netlify/functions/submit";
+const pdfServerReady = !PDF_ENDPOINT.includes("כאן");
+
+// flat name->value object (checkbox/radio groups joined by comma) for the server
+function collectFlat(){
+  const form = document.getElementById('anamnezaForm');
+  const out = {};
+  const groups = {};
+  form.querySelectorAll('input[type=checkbox]:checked, input[type=radio]:checked').forEach(el=>{
+    (groups[el.name] = groups[el.name] || []).push(el.value);
+  });
+  Object.keys(groups).forEach(k => out[k] = groups[k].join(', '));
+  form.querySelectorAll('input[type=text],input[type=date],input[type=tel],input[type=email],input.line,input.fill,input.date,input.desc,textarea').forEach(el=>{
+    if(el.type==='checkbox'||el.type==='radio') return;
+    if(el.value && el.value.trim()!==''){ out[el.name] = el.value.trim(); }
+  });
+  return out;
+}
+
+document.getElementById('sendBtn').addEventListener('click', function(){
+  const status = document.getElementById('status');
+
+  if(!document.getElementById('clientName').value.trim() ||
+     !document.getElementById('clientPhone').value.trim()){
+    status.className='status err';
+    status.textContent='נא למלא לפחות שם וטלפון לפני השליחה.';
+    return;
+  }
+
+  if(!pdfServerReady){
+    status.className='status err';
+    status.textContent='השרת עדיין לא הוגדר. יש להזין את כתובת השרת בקובץ, או להשתמש בכפתור ההדפסה.';
+    return;
+  }
+
+  status.className='status'; status.textContent='שולח...';
+  fetch(PDF_ENDPOINT, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(collectFlat())
+  }).then(async function(r){
+    const j = await r.json().catch(()=>({}));
+    if(r.ok && j.ok){
+      status.className='status ok';
+      status.textContent = j.clientCopy
+        ? 'הטופס נשלח בהצלחה ✔ ועותק נשלח גם למייל שלך.'
+        : 'הטופס נשלח בהצלחה למייל ✔ (PDF מצורף).';
+    } else {
+      status.className='status err';
+      status.textContent='שגיאה בשליחה לשרת. נסי שוב או השתמשי בכפתור ההדפסה.';
+    }
+  }).catch(function(){
+    status.className='status err';
+    status.textContent='לא ניתן להתחבר לשרת. בדקי חיבור אינטרנט או השתמשי בכפתור ההדפסה.';
+  });
+});
+
+document.getElementById('printBtn').addEventListener('click', function(){ window.print(); });
+
+document.getElementById('downloadBtn').addEventListener('click', function(){
+  const status = document.getElementById('status');
+  if(!pdfServerReady){
+    // no server configured yet — fall back to the browser print dialog
+    window.print();
+    return;
+  }
+  status.className='status'; status.textContent='מכין PDF...';
+  const payload = Object.assign({__mode:'pdf'}, collectFlat());
+  fetch(PDF_ENDPOINT, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(payload)
+  }).then(function(r){
+    if(!r.ok) throw new Error('server');
+    return r.blob();
+  }).then(function(blob){
+    const name = (document.getElementById('clientName').value.trim() || 'טופס');
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'אנמנזה-' + name + '.pdf';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
+    status.className='status ok'; status.textContent='ה-PDF הורד למכשיר ✔';
+  }).catch(function(){
+    status.className='status err'; status.textContent='שגיאה בהורדה. נסי שוב או השתמשי בכפתור ההדפסה.';
+  });
+});
+</script>
+</body>
+</html>
