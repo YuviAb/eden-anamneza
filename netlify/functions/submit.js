@@ -2,7 +2,7 @@
 // No Chromium bundling, so manual "drag & drop" deploys work fine.
 
 const { Resend } = require('resend');
-const { buildHtmlFromFlat } = require('./pdf-html');
+const { buildHtmlFromFlat } = require('./lib/pdf-html');
 
 // ---- CONFIG (set as environment variables in Netlify) ----
 const PDFSHIFT_API_KEY = process.env.PDFSHIFT_API_KEY;           // from pdfshift.io
