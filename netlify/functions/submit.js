@@ -12,6 +12,10 @@ const FROM_EMAIL       = process.env.FROM_EMAIL || 'Eden Cosmetics <onboarding@r
 // set PDFSHIFT_SANDBOX=1 while testing (unlimited free conversions, adds a watermark)
 const SANDBOX = process.env.PDFSHIFT_SANDBOX === '1';
 
+// ---- CRM integration ----
+const CRM_ENDPOINT = process.env.CRM_ENDPOINT;   // https://your-crm.com/api/intake/anamneza
+const CRM_SECRET   = process.env.CRM_SECRET;     // shared secret with the CRM
+
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -31,6 +35,32 @@ async function htmlToPdf(html){
   }
   const arrayBuf = await resp.arrayBuffer();
   return Buffer.from(arrayBuf);
+}
+
+
+async function sendToCrm(flat, pdfBase64) {
+  if (!CRM_ENDPOINT || !CRM_SECRET) return { ok: false, skipped: true };
+  const payload = {
+    first_name: flat['\u05e9\u05dd'] || '',
+    last_name:  flat['\u05e9\u05dd \u05de\u05e9\u05e4\u05d7\u05d4'] || '',
+    phone:      flat['\u05d8\u05dc\u05e4\u05d5\u05df'] || '',
+    form_data:  flat,
+    pdf_base64: pdfBase64,
+  };
+  try {
+    const resp = await fetch(CRM_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Intake-Secret': CRM_SECRET },
+      body: JSON.stringify(payload),
+    });
+    if (!resp.ok) {
+      const t = await resp.text().catch(()=> '');
+      return { ok: false, error: `CRM ${resp.status}: ${t}` };
+    }
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: String(e) };
+  }
 }
 
 exports.handler = async (event) => {
@@ -111,5 +141,13 @@ exports.handler = async (event) => {
     return { statusCode: 502, headers: CORS, body: JSON.stringify({ error: 'email failed', detail: String(err) }) };
   }
 
-  return { statusCode: 200, headers: CORS, body: JSON.stringify({ ok: true, clientCopy }) };
+  // 3) forward to CRM (does not block email success if it fails)
+  let crmResult = { ok: false };
+  try {
+    crmResult = await sendToCrm(flat, pdfBuffer.toString('base64'));
+  } catch (e) {
+    crmResult = { ok: false, error: String(e) };
+  }
+
+  return { statusCode: 200, headers: CORS, body: JSON.stringify({ ok: true, clientCopy, crm: crmResult.ok }) };
 };
